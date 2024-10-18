@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Cookie Origins Visualization</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        body { margin: 0; position: fixed; top: 0; right: 0; bottom: 0; left: 0; }
+        svg { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <script>
+        // Load your data
+        d3.json('cookieOriginsGraph.json').then(function(data) {
+            // Assume your data processing happens here
+            // And you now have nodes and links for your graph
+
+            // Setup the SVG canvas dimensions
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+
+            // Create the SVG element
+            const svg = d3.select("body").append("svg")
+                .attr("viewBox", [-width / 2, -height / 2, width, height])
+                .style("cursor", "move");
+
+            // Define the zoom behavior
+            const zoom = d3.zoom()
+                .scaleExtent([1, 40])
+                .on("zoom", (event) => {
+                    svg.attr("transform", event.transform);
+                });
+
+            // Apply the zoom behavior to the SVG
+            svg.call(zoom);
+
+            // Here, you'll also add your code for setting up the force-directed graph
+            // including adding nodes, links, and applying forces.
+        });
+    </script>
+</body>
+</html>

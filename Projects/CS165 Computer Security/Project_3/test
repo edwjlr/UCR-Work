@@ -1,0 +1,14 @@
+
+# User API: op <user_index> <domain_index> <args>
+
+# Commands: 
+# add <question_index> <question_type> <question> <answer(s)>
+# change <question_index> <question> <answer(s)>
+
+add 1 string flavor butterscotch
+add 2 int lucky 12
+add 3 string dog_breed beagle
+add 4 int area_code 814
+change 4 area_code 909
+login 3
+beagle

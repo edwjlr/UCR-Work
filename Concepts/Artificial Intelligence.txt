@@ -1,0 +1,125 @@
+# Author: Edwin Lopez
+# AI Key Concepts:
+# 1. Heuristic Search (A* Search)
+# 2. Classical Planning (Simple Operator-Based)
+# 3. Constraint Satisfaction Problem (Backtracking)
+# 4. Logical Inference (Basic Rule Application)
+
+import heapq
+
+# ------------------- HEURISTIC SEARCH (A*) -------------------
+def a_star_search(graph, heuristic, start, goal):
+    open_list = []
+    heapq.heappush(open_list, (0 + heuristic[start], start))
+    came_from = {start: None}
+    g_score = {node: float('inf') for node in graph}
+    g_score[start] = 0
+
+    while open_list:
+        current = heapq.heappop(open_list)[1]
+        if current == goal:
+            return reconstruct_path(came_from, current)
+
+        for neighbor, cost in graph[current].items():
+            tentative_g_score = g_score[current] + cost
+            if tentative_g_score < g_score[neighbor]:
+                came_from[neighbor] = current
+                g_score[neighbor] = tentative_g_score
+                f_score = tentative_g_score + heuristic[neighbor]
+                heapq.heappush(open_list, (f_score, neighbor))
+
+    return None
+
+def reconstruct_path(came_from, current):
+    path = []
+    while current:
+        path.append(current)
+        current = came_from[current]
+    return path[::-1]
+
+# Example Graph and Heuristic
+graph = {
+    'A': {'B': 1, 'C': 3},
+    'B': {'A': 1, 'D': 1},
+    'C': {'A': 3, 'D': 1},
+    'D': {'B': 1, 'C': 1, 'E': 6},
+    'E': {'D': 6},
+}
+
+heuristic = {'A': 3, 'B': 2, 'C': 1, 'D': 5, 'E': 0}
+path = a_star_search(graph, heuristic, 'A', 'E')
+print(f"A* Path: {path}")
+
+# ------------------- CLASSICAL PLANNING -------------------
+class SimplePlanner:
+    def __init__(self, initial_state):
+        self.state = initial_state
+
+    def apply_operator(self, op_name, preconditions, effects):
+        if all(self.state.get(cond, False) for cond in preconditions):
+            self.state.update(effects)
+            print(f"Applied {op_name}")
+            return True
+        return False
+
+# Example Planning
+initial_state = {'at_room': True, 'has_key': False, 'door_locked': True}
+planner = SimplePlanner(initial_state)
+planner.apply_operator('pick_up_key', ['at_room'], {'has_key': True})
+planner.apply_operator('unlock_door', ['has_key'], {'door_locked': False})
+
+# ------------------- CONSTRAINT SATISFACTION (CSP) -------------------
+def is_valid(assignment, var, value):
+    for neighbor, assigned_value in assignment.items():
+        if abs(neighbor - var) == abs(assigned_value - value):
+            return False
+    return True
+
+def solve_n_queens(n, assignment={}):
+    if len(assignment) == n:
+        return assignment
+    var = len(assignment)
+    for value in range(n):
+        if is_valid(assignment, var, value):
+            assignment[var] = value
+            result = solve_n_queens(n, assignment)
+            if result:
+                return result
+            del assignment[var]
+    return None
+
+# Example 4-Queens Problem
+solution = solve_n_queens(4)
+print(f"4-Queens Solution: {solution}")
+
+# ------------------- LOGICAL INFERENCE -------------------
+class InferenceEngine:
+    def __init__(self):
+        self.rules = []
+        self.facts = set()
+
+    def add_rule(self, conditions, conclusion):
+        self.rules.append((conditions, conclusion))
+
+    def add_fact(self, fact):
+        self.facts.add(fact)
+
+    def infer(self):
+        new_facts = set()
+        while True:
+            for conditions, conclusion in self.rules:
+                if all(cond in self.facts for cond in conditions):
+                    if conclusion not in self.facts:
+                        new_facts.add(conclusion)
+            if not new_facts:
+                break
+            self.facts.update(new_facts)
+        return self.facts
+
+# Example Logical Inference
+inference = InferenceEngine()
+inference.add_fact('A')
+inference.add_rule(['A'], 'B')
+inference.add_rule(['B'], 'C')
+inferred_facts = inference.infer()
+print(f"Inferred Facts: {inferred_facts}")

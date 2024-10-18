@@ -1,0 +1,71 @@
+Third Party Cookies and Online Privacy
+A project by: E 
+
+Introduction
+
+When you browse the internet, websites and third parties(advertisers and/or analytic services)  embedded into those websites collect data about you.
+This data includes:
+What pages you view, how long you spend on each page and the website.
+What you click on.
+Your mouse movements, this can give information on what parts of the site or what information you were interested in.
+The type of device, operating system, browser, hardware and software you have
+Your location based on your IP address.
+Through cookies and other tracking techniques websites can track your online activity across the web. (This is what we will be focusing on.
+
+Why do we care about this?
+
+Our Project
+
+Our project is to pull all third party cookies from the most visited websites and analyze and compare the cookies to understand how third party cookies are tracking us across multiple websites.
+
+
+First Attempt: Google Chrome Extension
+Try to create a chrome extension to get all cookies using in the current tab, including first and third parties
+manifest.json file. This file is required for all Chrome extensions and defines various properties like permissions, background scripts, etc.
+background.js file. Handle cookie viewer and other background tasks.
+popup.html file. For the extension's popup UI.
+popup.js file. To handle interactions in the popup.
+
+
+
+Challenges with Extension
+Unable to get cross-domain cookies
+For security reasons, chrome.cookies API only provides three methods to get cookies: get(), get a single cookie; getAll(), get cookies that match the given information; and getAllCookieStores(), Lists all existing cookie stores
+
+https://developer.chrome.com/docs/extensions/reference/api/cookies
+
+API Restrictions prevented
+
+Puppeteer
+
+Findings
+
+Project Fallbacks
+
+Google removing third party cookie support
+A step in the right direction, but not a final solution.
+First-party cookies can still and do collect extensive information, and companies can choose to sell or share information between them.
+First-Party cookies are limited to the domain that sets them, but websites can still integrate social media buttons, analytic tools, or advertising networks
+Companies like facebook and Google that are so well spread will still be collecting lots of data.
+There is still lack of transparency on what data a first-party cookie is collecting.
+
+Google Chrome Data Collection
+
+Google chrome or virtually any other web browser can still collect data from you. Browsers collect data to improve user experience and for other purposes such as personalization and security.
+This data includes:
+Browsing history: websites you visit, bookmarks and search history
+Usage data: How you use the browser, and to do what including which features you use and how often
+Device information: Operating system, hardware and network information
+Location Data: IP address can give a good estimate about your location. Moreover google maps gives everything about your whereabouts
+Site Data: All information stored by websites on your device such as cookies and website preferences
+
+Heatmaps and Session Replays
+
+Future Feature
+
+Other
+Tracking Pixel Detection
+Browser Fingerprinting Analysis
+Ultrasound Cross-Device Tracking
+
+

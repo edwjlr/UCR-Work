@@ -1,0 +1,124 @@
+; Assembly Language Concepts
+; Author: Edwin Lopez
+; This file demonstrates key assembly concepts including:
+; 1. Data Movement (MOV, LOAD, STORE)
+; 2. Arithmetic Operations (ADD, SUB, MUL, DIV)
+; 3. Conditional Jumps and Comparisons (CMP, JUMP)
+; 4. Loops (LOOP instruction)
+; 5. Procedure Calls (CALL, RET)
+;
+; How to run:
+; nasm -f elf64 -o assembly_class.o assembly_class.asm
+; gcc -no-pie -o assembly_class assembly_class.o
+; ./assembly_class
+
+section .data
+    ; Data section: Declare variables and constants
+    msg db 'Hello, World!', 0       ; Null-terminated string for output
+    num1 dd 10                      ; Define a 32-bit number (10)
+    num2 dd 5                       ; Define a second 32-bit number (5)
+    result dd 0                     ; Variable to store the result of operations
+
+section .bss
+    ; Uninitialized data section
+    temp resd 1                     ; Temporary variable to hold a result
+
+section .text
+    global _start                   ; Entry point for the program
+
+_start:
+    ; --- 1. Data Movement ---
+    ; MOV instruction: Move immediate values and variables
+    ; Registers used: eax, ebx, ecx for general purpose computations
+
+    mov eax, dword [num1]           ; Move the value of num1 into the eax register
+    mov ebx, dword [num2]           ; Move the value of num2 into the ebx register
+    mov ecx, 0                      ; Clear ecx register (set to 0)
+
+    ; --- 2. Arithmetic Operations ---
+    ; ADD, SUB, MUL, DIV: Perform arithmetic operations on the values in registers
+    ; and store the results back into memory (in 'result').
+
+    ; Addition
+    add eax, ebx                    ; eax = num1 + num2
+    mov [result], eax               ; Store the result of addition in 'result'
+
+    ; Subtraction
+    mov eax, dword [num1]           ; Reload num1 into eax for subtraction
+    sub eax, ebx                    ; eax = num1 - num2
+    mov [result], eax               ; Store the result of subtraction in 'result'
+
+    ; Multiplication
+    mov eax, dword [num1]           ; Load num1 into eax
+    imul eax, ebx                   ; Multiply eax by ebx (num1 * num2)
+    mov [result], eax               ; Store the result of multiplication in 'result'
+
+    ; Division
+    mov eax, dword [num1]           ; Load num1 into eax
+    cdq                             ; Extend eax into edx:eax for division (signed)
+    idiv ebx                        ; Divide eax by ebx (num1 / num2), result in eax
+    mov [result], eax               ; Store the result of division in 'result'
+
+    ; --- 3. Conditional Jumps and Comparisons ---
+    ; CMP: Compare values, followed by conditional jumps based on the comparison result.
+    ; Instructions: jg (jump if greater), jl (jump if lesser), je (jump if equal).
+
+    cmp dword [num1], dword [num2]  ; Compare num1 and num2
+    jg greater                      ; Jump to 'greater' if num1 > num2
+    jl lesser                       ; Jump to 'lesser' if num1 < num2
+    je equal                        ; Jump to 'equal' if num1 == num2
+
+greater:
+    ; Code to execute if num1 > num2
+    mov eax, dword [msg]            ; Load address of msg into eax
+    call print_message              ; Call procedure to print "Hello, World!"
+    jmp end                         ; Jump to end of program
+
+lesser:
+    ; Code to execute if num1 < num2
+    mov eax, dword [msg]            ; Load address of msg into eax
+    call print_message              ; Call procedure to print "Hello, World!"
+    jmp end                         ; Jump to end of program
+
+equal:
+    ; Code to execute if num1 == num2
+    mov eax, dword [msg]            ; Load address of msg into eax
+    call print_message              ; Call procedure to print "Hello, World!"
+    jmp end                         ; Jump to end of program
+
+    ; --- 4. Loops ---
+    ; LOOP: Implement a simple loop using the LOOP instruction and a decrementing counter.
+    ; This loop counts down from 10 to 0.
+
+    mov ecx, 10                     ; Set loop counter to 10
+loop_start:
+    cmp ecx, 0                      ; Compare counter (ecx) with 0
+    je loop_end                     ; Jump to 'loop_end' if ecx == 0
+    dec ecx                         ; Decrement the counter (ecx = ecx - 1)
+    jmp loop_start                  ; Jump back to the start of the loop
+
+loop_end:
+    ; Code to execute after loop ends
+
+    ; --- 5. Procedure Calls ---
+    ; CALL, RET: Demonstrate how to call a subroutine in assembly language.
+    ; This procedure prints "Hello, World!" to the console using syscalls.
+
+    call print_message              
+
+    ; Exit the program using a system call
+end:
+    mov eax, 60                     ; Syscall number for exit (60)
+    xor edi, edi                    ; Exit status code 0
+    syscall                         ; Invoke system call to exit
+
+; Procedure to print a message (Hello, World!)
+print_message:
+    ; Parameters: None (uses global 'msg')
+    ; Output: Prints "Hello, World!" to stdout (file descriptor 1)
+    mov edx, 13                     ; Message length (13 characters)
+    mov ecx, msg                    ; Pointer to the message
+    mov ebx, 1                      ; File descriptor 1 (stdout)
+    mov eax, 4                      ; Syscall number for sys_write (4)
+    int 0x80                        ; Trigger system call to write message
+    ret                             ; Return from procedure to caller

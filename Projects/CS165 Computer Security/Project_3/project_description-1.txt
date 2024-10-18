@@ -1,0 +1,248 @@
+* Operating system: Linux (on our project server, cs165.cs.ucr.edu).
+* Software required: gdb (GNU Debugger, already on the server) 
+	and p3.tgz (Makefile and C files)
+* Other inputs: Team-specific values for STRING1 and STRING2 (see below)
+* Other reference: Intel 64 and IA-32 Architectures Software Developer's Manual. Volume 2 (2A, 2B & 2C): Instruction Set Reference, A-Z
+
+- Project Overview
+
+In this project, you will be given a program (cs165-p3.c) and generate
+real exploit payloads to cause specific effects.  When the program is
+run normally, it adds/changes question-answer pairs, which could be
+used for two-factor authentication (e.g., "first dog" is "Fido"), for
+logging in.  However, the program contains three types of
+vulnerabilities for which teams will create payloads to exploit those
+vulnerabilities.  Each team will submit the payloads for their
+programs and a description of the attack approach and why their
+results indicate success.
+
+To carry out the project, you need to understand a few things which will be covered in class and lab sessions:
+- Basic assembly language knowledge
+- C structures and function pointers
+- Heap layout of a C structure
+- Buffer overflow, disclosure, and type confusion vulnerabilities
+
+Notes: 
+1. ASLR is on
+2. DEP/NX is on
+3. Stack canaries are on
+4. Control-flow integrity is not enforced
+
+
+--- Program Functionality
+
+The program allows the creation and modification of question-answer
+pairs, where the answers may be of multiple types.  For example, one
+question may have a string value and another may have an integer
+value.  Because of the different types of answers, the question-answer
+pairs are represented by multiple data types that logically extend a
+base type "question_t".
+
+The program is run by the following command line:
+
+./cs165-p3 <command-file> <output-file>
+
+The <command-file> is a sequence of commands to the program processed
+one at a time.  The files test, test2, test3 are examples of command
+files.
+
+
+--- Program Details
+
+Overall there are three data types related to question-answer pairs.
+
+(1) question_t : base type, which just has fields that determine the
+type of question.  No question instances are of this type, but all
+extend this data type.  Used to refer to an object of any of the three
+concrete types.
+
+(2) int_q : question with an integer value for its answer
+
+(3) string_q : question with a string value for its answer
+
+
+
+The program has three basic command types:
+
+• add <question index> <question type> <question> <answer>
+
+Adds a new question (<questiontype> <question> <answer>) of
+<questionindex> by adding <question> and <answer> to the question and
+answer fields, respectively, in the data structure determined by the
+<question type>.  Allocates a new question of appropriate data type
+(<question type>, either int_q or string_q) and initializes
+all the fields in the question's data structure.
+
+
+• change <question index> <question> <answer>
+
+Change a question-answer pair (<question> <answer>) for the question
+identified by the <question index>. Replace the values of the question
+and answer fields in the question data structure.  We cannot change
+the ”question type”.
+
+• login <question index>
+
+See if the user can answer authentication question <question index>
+correctly to authenticate to the program. 	   
+
+
+--- Project Notes
+
+In the project, each team will specify a set of commands where the
+arguments contain exploit payloads to perform the specified attacks.
+
+Program Customization: Each program will be customized by setting
+team-specific values for the #defines STRING1 and STRING2.  STRING1
+defines the length of the question buffer for integer question-answer
+pairs (int_q).  STRING2 defines the length of the question buffer for
+string question-answer pairs (string_q).
+
+TA Zheng will provide each team with their values.  It is the team's
+responsibility to make sure that they have obtained their values.
+Please set these values in the #define statements in lines 17-18 of
+cs165-p3.h.
+
+
+--- Part 1: buffer overflow to print the value "hacked!" 
+
+The aim here is to find and exploit a buffer overflow to alter one of
+the function pointers of one of the question types to invoke printf to
+display the user-defined value "hacked!" to the terminal (writing to
+the output file does not count).
+
+The idea is to specify command script that: (1) performs the buffer
+overflow and (2) invokes the modified function pointer.
+
+NOTE: We will run your program in a controlled environment to
+determine whether this effect is achieved.
+ 
+Workflow:
+- Locate the opportunity for buffer overflow.
+- Create a command script for the application to exploit the overflow as follows.
+- Define one command to overwrite the value of a function pointer field in a heap object to the function "printf@plt"
+- Define a second command to invoke the modified function pointer with the inputs necessary to generate the specified output to the terminal.
+
+HINT: Find the address of the PLT entry for the printf function
+(printf@plt) to use as the new function pointer from the "objdump" of
+the executable.  Note that by replacing the value of a function
+pointer, you will be able to provide the arguments to printf.
+Finally, note that printf prints its first argument without any format
+specifier (i.e., printf(x) prints the value of the variable x,
+assuming it's a sring).
+
+Submission requirement: 
+- (2 points) The command script that includes a payload necessary to achieve the specified effect.
+- (1 point) Documentation detailing the methodology and why it successfully achieves the specified effect.  Please limit this to 1 page.
+
+
+--- Part 2: buffer overread disclosure to output the answer value of an
+integer question object.
+
+Define a sequence of comamnds to create an integer question-answer
+pair and leak the answer to the terminal (writing to the output file
+does not count).
+
+The idea is to define a command to define an integer question-answer
+pair such that another command may leak integer value.
+
+Submission requirement: 
+- (2 points) The command script that includes a payload necessary to achieve the specified effect.
+- (1 point) Documentation detailing the methodology and why it successfully achieves the specified effect.  Please limit this to 1 page.
+
+Workflow:
+- Locate the opportunity for buffer overread (disclosure attack).
+- Create a command script for the application to exploit the overread as follows.
+- Define a command to add an integer question-answer pair to enable a buffer overread.
+- Define a command to leak the answer to the terminal
+
+Hint: Find a command that will output the entered question-answer pair
+in such a way that your commands will leak the answer value.  Note
+that the answer value may be leaked in non-standard ways (e.g., if the
+secret integer answer is "42", the value "42" may not be printed
+explicitly.).  Please explain why your effect is sufficient to leak
+the secret value.
+
+
+--- Part 3: Use a type error to print the value "hacked!"
+
+In this part, the aim is to use ambiguities between the data types of
+the question-answer pairs to create a type confusion attack.
+
+In this attack, the aim is to create a question-answer pair of one
+type and use a command to cause the program to interpret the
+question-answer pair as being from another type to cause a command
+payload to be interpreted as a function pointer (for "printf@plt" as
+above).
+
+Define a sequence of commands to create a question-answer pair to
+assign and use the function pointer to output "hacked!" to the
+terminal (writing to the output file does not count).
+
+Submission requirement: 
+- (2 points) The command script that includes a payload necessary to achieve the specified effect.
+- (1 point) Documentation detailing the methodology and why it successfully achieves the specified effect.  Please limit this to 1 page.
+
+
+Workflow:
+- Locate a type confusion vulnerability where an input string (question or answer) for one type may be interpreted as a function pointer in another type.
+- Create a command script for the application to exploit the type confusion as follows.
+- Find how to create a command to add a question-answer pair for one type of question that may modify a function pointer for another type of question
+- Define a first command to specify the payload to add a question-answer pair of one type that assigns a function pointer of another type to "printf@plt"
+- Define a second command to cause printf to produce the output "hacked!" to the terminal.
+
+Hints: compare the memory layouts of the question types to see where
+the question-answer pairs and the function pointers are stored.
+
+
+--- Producing Payloads
+
+Producing a command file for an exploit payload using a text editor is
+not practical as you need to specify byte values that may not
+correspond to the ascii characters you normally type.  Fortunately,
+there is an easy way to generate command payloads.
+
+Suppose that you want to specify a command
+
+add 1 string question answer<addr>
+
+where <addr> is an address you want to add to the end of "answer" to
+exploit the program.  Assume that the address is 0x80490ff.  You can
+use the "echo" command to generate a payload with that address.
+
+echo -e "add 1 string question answer\xff\x90\x04\x08"
+
+The "-e" option permits the interpretation of "backslash escapes",
+such as the individual byte values specified above.  For example,
+"\xff" is the low-order byte of the address (0xff), so it is encoded
+as shown to be added to the string.  Note that when you see the string
+in the file, many byte values will be transformed into strange
+characters.
+
+NOTE: Some bytes may correspond to characters that prevent the attack,
+such as the space character (0x20).  Let Zheng and I know if you run
+into a problem due to a character that presents problems.
+
+To create a command file, simply redirect each "echo" for each command
+line into your target file.
+
+echo -e "add 1 string question answer\xff\x90\x04\x08" >> payload_file
+
+">>" appends the add command in one line to "file".
+
+Happy Hacking!
+
+
+--- General Notes
+
+General hints: You can compile the program locally and dissect it
+using any disassembler (I used 'objdump'). You can use "gdb" on the
+target machine to understand its behavior.  Even try the attacks in a
+manner similar to Project 2 to verify the effects.  The files test,
+test2, test3 can be used to run the program under the debugger to learn
+its normal behavior.
+  
+Note that the heap addresses will be different between the debugging
+run and a regular run. See
+http://www.mathyvanhoef.com/2012/11/common-pitfalls-when-writing-exploits.html
+for details.

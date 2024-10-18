@@ -1,0 +1,78 @@
+# CS 172: Introduction to Information Retrieval concepts:
+# 1. Vector Model (Cosine Similarity)
+# 2. BM25 (Probabilistic IR)
+# 3. IR Evaluation (Precision, Recall, F1)
+# 4. PageRank Algorithm
+# 5. Web Crawler (Optional)
+
+import math
+from collections import defaultdict
+
+# ------------------- VECTOR MODEL & COSINE SIMILARITY -------------------
+def cosine_similarity(query, document, tf_idf_weights):
+    dot_product = sum(query[word] * document.get(word, 0) for word in query)
+    query_norm = math.sqrt(sum(val ** 2 for val in query.values()))
+    doc_norm = math.sqrt(sum(val ** 2 for val in document.values()))
+    return dot_product / (query_norm * doc_norm)
+
+# Example: tf-idf weights for a document
+tf_idf_doc = {'university': 6.97, 'Riverside': 3.32, 'California': 5.47}
+tf_idf_query = {'university': 1.0, 'Riverside': 1.0}
+
+# Calculate similarity
+cos_sim = cosine_similarity(tf_idf_query, tf_idf_doc, tf_idf_doc)
+print(f"Cosine Similarity: {cos_sim}")
+
+# ------------------- BM25 -------------------
+def bm25_score(query, document, k1=1.5, b=0.75):
+    score = 0
+    for word in query:
+        if word in document:
+            tf = document[word]
+            idf = math.log((1000 - 200 + 0.5) / (200 + 0.5))  # Example IDF calculation
+            score += idf * ((tf * (k1 + 1)) / (tf + k1 * (1 - b + b * (1000 / 500))))
+    return score
+
+# Example: BM25 score
+bm25_doc = {'university': 3, 'Riverside': 1}
+bm25_query = {'university': 1, 'Riverside': 1}
+bm25_res = bm25_score(bm25_query, bm25_doc)
+print(f"BM25 Score: {bm25_res}")
+
+# ------------------- IR EVALUATION (Precision, Recall, F1) -------------------
+def precision_recall_f1(relevant_docs, retrieved_docs):
+    tp = len(set(relevant_docs) & set(retrieved_docs))
+    precision = tp / len(retrieved_docs)
+    recall = tp / len(relevant_docs)
+    f1 = 2 * (precision * recall) / (precision + recall) if (precision + recall) > 0 else 0
+    return precision, recall, f1
+
+# Example: Precision, Recall, F1
+relevant = ['doc1', 'doc2', 'doc3']
+retrieved = ['doc1', 'doc2', 'doc4']
+precision, recall, f1 = precision_recall_f1(relevant, retrieved)
+print(f"Precision: {precision}, Recall: {recall}, F1 Score: {f1}")
+
+# ------------------- PAGERANK ALGORITHM -------------------
+def page_rank(graph, d=0.85, num_iterations=100):
+    N = len(graph)
+    ranks = {node: 1 / N for node in graph}
+    
+    for _ in range(num_iterations):
+        new_ranks = {}
+        for node in graph:
+            rank_sum = sum(ranks[neighbor] / len(graph[neighbor]) for neighbor in graph if node in graph[neighbor])
+            new_ranks[node] = (1 - d) / N + d * rank_sum
+        ranks = new_ranks
+    return ranks
+
+# Example Graph
+graph = {
+    'A': ['B', 'C'],
+    'B': ['A', 'C', 'D'],
+    'C': ['A', 'D'],
+    'D': ['B', 'C'],
+}
+
+page_ranks = page_rank(graph)
+print(f"PageRank Scores: {page_ranks}")

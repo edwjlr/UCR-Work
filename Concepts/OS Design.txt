@@ -1,0 +1,99 @@
+# CS153: Design of Operating Systems concepts:
+# 1. Process Management (Exit and Wait)
+# 2. Scheduling (Priority Scheduling)
+# 3. Memory Management (Stack Growth)
+# 4. Shared Memory
+
+# ------------------- PROCESS MANAGEMENT (Exit and Wait) -------------------
+class Process:
+    def __init__(self, pid):
+        self.pid = pid
+        self.exit_status = None
+
+class OS:
+    def __init__(self):
+        self.processes = {}
+
+    def exit(self, pid, status):
+        if pid in self.processes:
+            self.processes[pid].exit_status = status
+            print(f"Process {pid} exited with status {status}")
+
+    def wait(self, pid):
+        if pid in self.processes:
+            status = self.processes[pid].exit_status
+            print(f"Waited for process {pid}, exit status: {status}")
+            return status
+
+# Example Process Management
+os_sim = OS()
+os_sim.processes[1] = Process(1)
+os_sim.exit(1, 0)
+os_sim.wait(1)
+
+# ------------------- SCHEDULING (Priority Scheduling) -------------------
+class Scheduler:
+    def __init__(self):
+        self.ready_queue = []
+
+    def add_process(self, pid, priority):
+        self.ready_queue.append((priority, pid))
+        self.ready_queue.sort(reverse=True)  # Higher priority runs first
+
+    def schedule(self):
+        if self.ready_queue:
+            _, pid = self.ready_queue.pop(0)
+            print(f"Scheduling process {pid}")
+        else:
+            print("No processes to schedule")
+
+# Example Scheduling
+scheduler = Scheduler()
+scheduler.add_process(1, 5)
+scheduler.add_process(2, 10)
+scheduler.schedule()
+scheduler.schedule()
+
+# ------------------- MEMORY MANAGEMENT (Stack Growth) -------------------
+class MemoryManager:
+    def __init__(self, max_memory):
+        self.max_memory = max_memory
+        self.stack_pointer = max_memory  # Stack grows downward
+
+    def allocate_stack(self, size):
+        if self.stack_pointer - size >= 0:
+            self.stack_pointer -= size
+            print(f"Allocated {size} bytes, new stack pointer: {self.stack_pointer}")
+        else:
+            print("Stack overflow")
+
+# Example Memory Management
+mem_manager = MemoryManager(1024)  # 1KB memory
+mem_manager.allocate_stack(128)  # Allocate 128 bytes for stack
+mem_manager.allocate_stack(1024)  # Attempt stack overflow
+
+# ------------------- SHARED MEMORY -------------------
+class SharedMemory:
+    def __init__(self):
+        self.memory_segments = {}
+        self.lock = False
+
+    def shm_open(self, segment_id):
+        if segment_id not in self.memory_segments:
+            self.memory_segments[segment_id] = {'ref_count': 1, 'data': []}
+        else:
+            self.memory_segments[segment_id]['ref_count'] += 1
+        return self.memory_segments[segment_id]
+
+    def shm_close(self, segment_id):
+        if segment_id in self.memory_segments:
+            self.memory_segments[segment_id]['ref_count'] -= 1
+            if self.memory_segments[segment_id]['ref_count'] == 0:
+                del self.memory_segments[segment_id]
+                print(f"Segment {segment_id} closed and deallocated")
+
+# Example Shared Memory Management
+shm = SharedMemory()
+seg = shm.shm_open(1)
+print(f"Opened shared memory segment: {seg}")
+shm.shm_close(1)

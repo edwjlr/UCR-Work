@@ -1,0 +1,4 @@
+#Commands to run gdb scripts:
+gdb -x log_result_advanced_exploit.gdb cs165-p2
+gdb -x log_result_exploit.gdb cs165-p2
+gdb -x function_pointer_exploit.gdb cs165-p2

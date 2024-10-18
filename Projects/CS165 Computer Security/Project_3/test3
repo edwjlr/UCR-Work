@@ -1,0 +1,22 @@
+
+# User API: op <domain_index> <args>
+
+# Commands: 
+# add <question_index> <question_type> <question> <answer(s)>
+# change <question_index> <question> <answer(s)>
+
+add 1 string flavor mint
+change 1 flavor butterscotch
+add 2 int lucky 12
+add 3 int zipcode 16802
+add 4 string dog_breed beagle
+add 5 int dog_breed 42
+# no string values for integer questions
+add 6 int unlucky six-hundred
+change 3 area_code 814
+# change of question twice is ok
+change 3 area_code 909
+login 3
+16802
+login 3
+909
